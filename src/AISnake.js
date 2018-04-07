@@ -2,7 +2,7 @@
  * Класс искуственного интеллекта змейки.
  * @constructor
  */
-function AI_snake() {
+export default function AI_snake() {
     /**
      * Взята ли змейка под контроль игрока
      * @type {boolean}
@@ -20,7 +20,7 @@ function AI_snake() {
      */
     this.getControll = function (snake) {
         this.underControll = true;
-    }
+    };
     /**
      * Устанавливает направление змейки. Вызывается каждый кадр
      * @param snake Объект змейки
@@ -39,8 +39,7 @@ function AI_snake() {
         var SX = snake.getSnakeFirstBody().x;
 
         if (SY < food.y) {
-            if (snake.directionWay() === "UP")
-            {
+            if (snake.directionWay() === "UP") {
                 snake.move("LEFT");
                 return;
             }
@@ -72,5 +71,5 @@ function AI_snake() {
             snake.move("UP");
             return;
         }
-    }
+    };
 }
