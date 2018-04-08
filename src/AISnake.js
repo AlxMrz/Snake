@@ -1,24 +1,15 @@
-/**
- * Класс искуственного интеллекта змейки.
- * @constructor
- */
-export default function AI_snake() {
-    /**
-     * Взята ли змейка под контроль игрока
-     * @type {boolean}
-     */
-    var underControll = false;
-    /**
-     * Массив змеек
-     * @type {Array}
-     */
-    var snakes = new Array();
+export default class AISnake {
+  constructor() {
+    this.underControll = false;
+    this.snakes = new Array();
+  }
+
     /**
      * Отправляет змейку под контроль игрока
      * @param snake
      * @return void
      */
-    this.getControll = function (snake) {
+    getControll (snake) {
         this.underControll = true;
     };
     /**
@@ -26,8 +17,7 @@ export default function AI_snake() {
      * @param snake Объект змейки
      * @param food Объект еды
      */
-    this.setSnakeDirection = function (snake, food) {
-
+    setSnakeDirection (snake, food) {
         /**
          * @var int SY значение Y "головы" змейки
          */

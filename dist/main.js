@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,38 +68,10 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = Food;
-/**
- * Класс "Еды"
- * @constructor
- */
-function Food(ctx) {
-  this.ctx = ctx;
-  /**
-   * Значение координаты x
-   */
-  this.x;
-  /**
-   * Значение координаты y
-   */
-  this.y;
-  /**
-   * Установить значение координат еды
-   * @param x1
-   * @param y1
-   */
-  this.setFoodCoord = function (x1, y1) {
-    this.x = x1;
-    this.y = y1;
-  };
-  /**
-   * Прорисовка еды на холсте
-   */
-  this.drawFood = function () {
-    this.ctx.fillStyle = "blue";
-    this.ctx.fillRect(this.x, this.y, 10, 10);
-  };
-}
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Application__ = __webpack_require__(1);
+
+(new __WEBPACK_IMPORTED_MODULE_0__Application__["a" /* default */]()).main();
 
 
 /***/ }),
@@ -107,10 +79,31 @@ function Food(ctx) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Application__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Scene__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__EventRegister__ = __webpack_require__(7);
 
-(new __WEBPACK_IMPORTED_MODULE_0__Application__["a" /* default */]()).main();
+
+
+class Application {
+  constructor() {
+
+  }
+  main() {
+    this.eventRegister = new __WEBPACK_IMPORTED_MODULE_1__EventRegister__["a" /* default */]();
+    this.eventRegister.registerAllEvents();
+    this.scene = new __WEBPACK_IMPORTED_MODULE_0__Scene__["a" /* default */]();
+    this.scene.init();
+    this.game();
+  }
+
+  game() {
+    this.scene.show();
+    this.eventRegister.resetEventData();
+    window.requestAnimationFrame(this.game.bind(this));
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Application;
+
 
 
 /***/ }),
@@ -120,74 +113,82 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Snake__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AISnake__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Food__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__functions_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Food__ = __webpack_require__(6);
 
 
 
 
+class Scene {
+  constructor() {
 
-class Application {
-  main() {
+  }
 
-    document.onkeydown = function (event) {
-        if (event.keyCode === 37) {
-            if (mainSnake.directionWay() !== "RIGHT") mainSnake.move("LEFT");
+  init() {
+    this.canvas = document.getElementById("myCanvas");
+    this.ctx = this.canvas.getContext("2d");
+    this.xsy = document.getElementById("XSY");
+    this.xfy = document.getElementById("XFY");
+    this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */](100, 100, this.ctx);
+    this.aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
+    this.food = this.generateFood(this.ctx);
+    this.mainSnake.drawSnake();
+    this.food.drawFood();
+  }
+
+  show() {
+
+    if (this.food === undefined) {
+        this.food = this.generateFood(this.ctx);
+    }
+
+      this.aiSnake.setSnakeDirection(this.mainSnake, this.food);
+
+    if (this.checkPositions(this.food, this.mainSnake)) {
+        this.food = undefined;
+        this.mainSnake.pushBody();
+    }
+    if (this.mainSnake.directionWay() !== 'Nowhere') {
+        this.mainSnake.changePosition();
+
+        this.ctx.clearRect(0, 0, 800, 500);
+        this.mainSnake.drawSnake();
+
+        //thirdSnake.drawSnake();
+        if (this.food !== undefined) {
+            this.food.drawFood();
         }
-        if (event.keyCode === 38) {
-            if (mainSnake.directionWay() !== "DOWN") mainSnake.move("UP");
-        }
-        if (event.keyCode === 39) {
-            if (mainSnake.directionWay() !== "LEFT") mainSnake.move("RIGHT");
-        }
-        if (event.keyCode === 40) {
-            if (mainSnake.directionWay() !== "UP") mainSnake.move("DOWN");
-        }
-    };
-    var canvas = document.getElementById("myCanvas");
-    var ctx = canvas.getContext("2d");
-    var xsy = document.getElementById("XSY");
-    var xfy = document.getElementById("XFY");
-    var mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */](100, 100, ctx);
-
-    var aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
-    var food = Object(__WEBPACK_IMPORTED_MODULE_3__functions_js__["b" /* generateFood */])(ctx);
-    mainSnake.drawSnake();
-
-    food.drawFood();
-    var game = setInterval(function () {
-
-        if (food === undefined) {
-            food = Object(__WEBPACK_IMPORTED_MODULE_3__functions_js__["b" /* generateFood */])(ctx);
-        }
-
-          aiSnake.setSnakeDirection(mainSnake, food);
-        
-        if (Object(__WEBPACK_IMPORTED_MODULE_3__functions_js__["a" /* checkPositions */])(food, mainSnake)) {
-            food = undefined;
-            mainSnake.pushBody();
-        }
-        if (mainSnake.directionWay() !== 'Nowhere') {
-            mainSnake.changePosition();
-
-            ctx.clearRect(0, 0, 800, 500);
-            mainSnake.drawSnake();
-
-            //thirdSnake.drawSnake();
-            if (food !== undefined) {
-                food.drawFood();
-            }
-        }
+    }
 
 
 
-        ctx.fillStyle = "#ff0000";
-        ctx.font = "italic 30pt Arial";
-        ctx.fillText("Счет: " + mainSnake.getSnakeLength().length, 10, 30);
-    }, 1000 / 20);
+    this.ctx.fillStyle = "#ff0000";
+    this.ctx.font = "italic 30pt Arial";
+    this.ctx.fillText("Счет: " + this.mainSnake.getSnakeLength().length, 10, 30);
+  }
+   generateFood(ctx) {
+      var randomX;
+      var randomY;
+      for (var x = true; x !== false;) {
+          randomX = Math.round(Math.random() * 790);
+          randomY = Math.round(Math.random() * 490);
+          if (randomX % 10 !== 0 || randomY % 10 !== 0) continue;else {
+              x = false;
+          }
+          ;
+      }
+
+      var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */](ctx);
+      food.setFoodCoord(randomX, randomY);
+      return food;
+  }
+
+   checkPositions(food1, snake) {
+      if (food1.x === snake.getSnakeLength()[0].x && food1.y === snake.getSnakeLength()[0].y) return true;else {
+          return false;
+      }
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Application;
+/* harmony export (immutable) */ __webpack_exports__["a"] = Scene;
 
 
 
@@ -196,107 +197,129 @@ class Application {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = Snake;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SnakeBody__ = __webpack_require__(4);
 
 
-function Snake(x, y, ctx) {
-    var x = x;
-    var y = y;
-    this.ctx = ctx;
-    var direction = 'Nowhere';
-    var snakeColor = 'green';
-    var snakeLength = new Array(new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](x, y, this.ctx), new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](x - 10, y, this.ctx), new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](x - 20, y, this.ctx));
-    this.pushBody = function () {
-        snakeLength.push(new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](snakeLength[snakeLength.length - 1].x, snakeLength[snakeLength.length - 1].y, this.ctx));
-    };
-    this.move = function (whereToGo) {
-        direction = whereToGo;
-    };
-    this.setPosition = function (x1, y1) {
-        x = x1;
-        y = y1;
-    };
-    this.showCoordinates = function () {
-        return [x, y];
-    };
-    this.directionWay = function () {
-        return direction;
-    };
-    this.getSnakeFirstBody = function () {
-        return snakeLength[0];
-    };
-    this.getSnakeLength = function () {
-        return snakeLength;
-    };
-    this.setColor = function (color) {
-        snakeColor = color;
-    };
-    this.checkHealth = function () {
-        for (var count = 1; count < snakeLength.length; count++) {
-            if (snakeLength[0].x === snakeLength[count].x && snakeLength[0].y === snakeLength[count].y) {
+class Snake {
+    constructor(x, y, ctx) {
+      this.x = x;
+      this.y = y;
+      this.ctx = ctx;
+      this.direction = 'Nowhere';
+      this.snakeColor = 'green';
+      this.snakeLength = [
+        new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](this.x, this.y, this.ctx),
+        new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](this.x - 10, this.y, this.ctx),
+        new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](this.x - 20, this.y, this.ctx)
+      ];
+    }
 
+    pushBody () {
+        this.snakeLength.push(
+          new __WEBPACK_IMPORTED_MODULE_0__SnakeBody__["a" /* default */](
+            this.snakeLength[this.snakeLength.length - 1].x,
+            this.snakeLength[this.snakeLength.length - 1].y,
+            this.ctx)
+          );
+    };
+
+    move (whereToGo) {
+        this.direction = whereToGo;
+    };
+
+    setPosition (x1, y1) {
+        this.x = x1;
+        this.y = y1;
+    };
+
+    showCoordinates () {
+        return [this.x, this.y];
+    };
+
+    directionWay () {
+        return this.direction;
+    };
+
+    getSnakeFirstBody () {
+        return this.snakeLength[0];
+    };
+
+    getSnakeLength () {
+        return this.snakeLength;
+    };
+
+    setColor (color) {
+        this.snakeColor = color;
+    };
+
+    checkHealth () {
+        for (var count = 1; count < snakeLength.length; count++) {
+            if (this.snakeLength[0].x === this.snakeLength[count].x && this.snakeLength[0].y === this.snakeLength[count].y) {
                 return true;
             }
         }
     };
-    this.changePosition = function () {
-        if (direction === "LEFT") {
-            var snlen = snakeLength.length;
+
+    changePosition () {
+        if (this.direction === "LEFT") {
+            var snlen = this.snakeLength.length;
             for (var count = 1; count <= snlen; count++) {
                 if (count === snlen) {
-                    snakeLength[0].x -= 10;
+                    this.snakeLength[0].x -= 10;
                     continue;
                 }
-                snakeLength[snlen - count].y = snakeLength[snlen - count - 1].y;
-                snakeLength[snlen - count].x = snakeLength[snlen - count - 1].x;
+                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
             }
         }
-        if (direction === "UP") {
-            var snlen = snakeLength.length;
+        if (this.direction === "UP") {
+            var snlen = this.snakeLength.length;
             for (var count = 1; count <= snlen; count++) {
                 if (count === snlen) {
-                    snakeLength[0].y -= 10;
+                    this.snakeLength[0].y -= 10;
                     continue;
                 }
-                snakeLength[snlen - count].y = snakeLength[snlen - count - 1].y;
-                snakeLength[snlen - count].x = snakeLength[snlen - count - 1].x;
+                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
             }
         }
-        if (direction === "RIGHT") {
-            var snlen = snakeLength.length;
+        if (this.direction === "RIGHT") {
+            var snlen = this.snakeLength.length;
             for (var count = 1; count <= snlen; count++) {
                 if (count === snlen) {
-                    snakeLength[0].x += 10;
+                    this.snakeLength[0].x += 10;
                     continue;
                 }
-                snakeLength[snlen - count].y = snakeLength[snlen - count - 1].y;
-                snakeLength[snlen - count].x = snakeLength[snlen - count - 1].x;
+                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
             }
         }
-        if (direction === "DOWN") {
-            var snlen = snakeLength.length;
+        if (this.direction === "DOWN") {
+            var snlen = this.snakeLength.length;
             for (var count = 1; count <= snlen; count++) {
                 if (count === snlen) {
-                    snakeLength[0].y += 10;
+                    this.snakeLength[0].y += 10;
                     continue;
                 }
-                snakeLength[snlen - count].y = snakeLength[snlen - count - 1].y;
-                snakeLength[snlen - count].x = snakeLength[snlen - count - 1].x;
+                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
             }
         }
 
-        if (snakeLength[0].x < 0) snakeLength[0].x = 790;
-        if (snakeLength[0].y < 0) snakeLength[0].y = 490;
-        if (snakeLength[0].x > 790) snakeLength[0].x = 0;
-        if (snakeLength[0].y > 490) snakeLength[0].y = 0;
+        if (this.snakeLength[0].x < 0) this.snakeLength[0].x = 790;
+        if (this.snakeLength[0].y < 0) this.snakeLength[0].y = 490;
+        if (this.snakeLength[0].x > 790) this.snakeLength[0].x = 0;
+        if (this.snakeLength[0].y > 490) this.snakeLength[0].y = 0;
     };
-    this.drawSnake = function () {
-        for (var count = 0, x1 = 0, y1 = 0; count < snakeLength.length; count++, x1 - 10, y1 - 10) {
-            snakeLength[count].drawBody();
+
+    drawSnake () {
+        for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
+            this.snakeLength[count].drawBody();
         }
     };
 }
+/* harmony export (immutable) */ __webpack_exports__["a"] = Snake;
+
 
 
 /***/ }),
@@ -304,22 +327,26 @@ function Snake(x, y, ctx) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = snakeBody;
-function snakeBody(x1, y1, ctx) {
-    this.x = x1;
-    this.y = y1;
-    this.ctx = ctx;
-    var bodyColor = 'green';
-    this.setColor = function (color) {
-        bodyColor = color;
+class snakeBody {
+    constructor(x1, y1, ctx) {
+      this.x = x1;
+      this.y = y1;
+      this.ctx = ctx;
+      this.bodyColor = 'green';
+    }
+
+    setColor (color) {
+        this.bodyColor = color;
     };
-    this.drawBody = function () {
+    drawBody () {
         this.ctx.strokeStyle = "black";
-        this.ctx.fillStyle = bodyColor;
+        this.ctx.fillStyle = this.bodyColor;
         this.ctx.strokeRect(this.x, this.y, 10, 10);
         this.ctx.fillRect(this.x, this.y, 10, 10);
     };
 }
+/* harmony export (immutable) */ __webpack_exports__["a"] = snakeBody;
+
 
 
 /***/ }),
@@ -327,28 +354,18 @@ function snakeBody(x1, y1, ctx) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = AI_snake;
-/**
- * Класс искуственного интеллекта змейки.
- * @constructor
- */
-function AI_snake() {
-    /**
-     * Взята ли змейка под контроль игрока
-     * @type {boolean}
-     */
-    var underControll = false;
-    /**
-     * Массив змеек
-     * @type {Array}
-     */
-    var snakes = new Array();
+class AISnake {
+  constructor() {
+    this.underControll = false;
+    this.snakes = new Array();
+  }
+
     /**
      * Отправляет змейку под контроль игрока
      * @param snake
      * @return void
      */
-    this.getControll = function (snake) {
+    getControll (snake) {
         this.underControll = true;
     };
     /**
@@ -356,8 +373,7 @@ function AI_snake() {
      * @param snake Объект змейки
      * @param food Объект еды
      */
-    this.setSnakeDirection = function (snake, food) {
-
+    setSnakeDirection (snake, food) {
         /**
          * @var int SY значение Y "головы" змейки
          */
@@ -403,6 +419,8 @@ function AI_snake() {
         }
     };
 }
+/* harmony export (immutable) */ __webpack_exports__["a"] = AISnake;
+
 
 
 /***/ }),
@@ -410,32 +428,61 @@ function AI_snake() {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = generateFood;
-/* harmony export (immutable) */ __webpack_exports__["a"] = checkPositions;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Food__ = __webpack_require__(0);
+class Food {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.x;
+    this.y;
+  }
+
+  setFoodCoord (x1, y1) {
+    this.x = x1;
+    this.y = y1;
+  }
+
+  drawFood () {
+    this.ctx.fillStyle = "blue";
+    this.ctx.fillRect(this.x, this.y, 10, 10);
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Food;
 
 
-function generateFood(ctx) {
-    var randomX;
-    var randomY;
-    for (var x = true; x !== false;) {
-        randomX = Math.round(Math.random() * 790);
-        randomY = Math.round(Math.random() * 490);
-        if (randomX % 10 !== 0 || randomY % 10 !== 0) continue;else {
-            x = false;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class EventRegister {
+  registerAllEvents() {
+    this.registerKeyDown();
+  }
+
+  registerKeyDown() {
+    document.onkeydown = function (event) {
+        if (event.keyCode === 37) {
+            this.keydown = "LEFT";
         }
-        ;
-    }
+        if (event.keyCode === 38) {
+            this.keydown = "UP";
+        }
+        if (event.keyCode === 39) {
+            this.keydown = "RIGHT";
+        }
+        if (event.keyCode === 40) {
+            this.keydown = "DOWN";
+        }
+    };
+  }
 
-    var food = new __WEBPACK_IMPORTED_MODULE_0__Food__["a" /* default */](ctx);
-    food.setFoodCoord(randomX, randomY);
-    return food;
+  resetEventData() {
+    this.keydown = undefined;
+  }
+
 }
-function checkPositions(food1, snake) {
-    if (food1.x === snake.getSnakeLength()[0].x && food1.y === snake.getSnakeLength()[0].y) return true;else {
-        return false;
-    }
-}
+/* harmony export (immutable) */ __webpack_exports__["a"] = EventRegister;
+
 
 
 /***/ })
