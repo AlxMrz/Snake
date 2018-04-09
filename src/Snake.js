@@ -5,6 +5,8 @@ export default class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.snakeBodyWidth = 10;
+      this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
       this.snakeColor = 'green';
       this.snakeLength = [
@@ -62,56 +64,40 @@ export default class Snake {
 
     changePosition () {
         if (this.direction === "LEFT") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].x -= 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
+            this.moveAllBodies('x', this.snakeLength[0].x - this.snakeBodyWidth);
+        } else if (this.direction === "UP") {
+            this.moveAllBodies('y', this.snakeLength[0].y - this.snakeBodyHeight);
+        } else if (this.direction === "RIGHT") {
+            this.moveAllBodies('x', this.snakeLength[0].x + this.snakeBodyWidth);
+        } else if (this.direction === "DOWN") {
+            this.moveAllBodies('y', this.snakeLength[0].y + this.snakeBodyHeight);
         }
-        if (this.direction === "UP") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].y -= 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-        if (this.direction === "RIGHT") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].x += 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-        if (this.direction === "DOWN") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].y += 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-
-        if (this.snakeLength[0].x < 0) this.snakeLength[0].x = 790;
-        if (this.snakeLength[0].y < 0) this.snakeLength[0].y = 490;
-        if (this.snakeLength[0].x > 790) this.snakeLength[0].x = 0;
-        if (this.snakeLength[0].y > 490) this.snakeLength[0].y = 0;
+        this.moveSnakeHeadToParallelBoardIfNeeded();
     };
 
+    moveAllBodies(snakeCoord, value) {
+      var snlen = this.snakeLength.length;
+      for (var count = 1; count <= snlen; count++) {
+          if (count === snlen) {
+              if(snakeCoord === 'x') {
+                this.snakeLength[0].x = value;
+              } else if(snakeCoord === 'y') {
+                this.snakeLength[0].y = value;
+              }
+              continue;
+          }
+          this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+          this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
+      }
+    }
+
+    moveSnakeHeadToParallelBoardIfNeeded() {
+      if (this.snakeLength[0].x < 0) this.snakeLength[0].x = 790;
+      if (this.snakeLength[0].y < 0) this.snakeLength[0].y = 490;
+      if (this.snakeLength[0].x > 790) this.snakeLength[0].x = 0;
+      if (this.snakeLength[0].y > 490) this.snakeLength[0].y = 0;
+    }
+    
     drawSnake () {
         for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
             this.snakeLength[count].drawBody();

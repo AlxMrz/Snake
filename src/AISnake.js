@@ -18,17 +18,10 @@ export default class AISnake {
      * @param food Объект еды
      */
     setSnakeDirection (snake, food) {
-        /**
-         * @var int SY значение Y "головы" змейки
-         */
-        var SY = snake.getSnakeFirstBody().y;
+        var snakeHeadY = snake.getSnakeFirstBody().y;
+        var snakeHeadX = snake.getSnakeFirstBody().x;
 
-        /**
-         * @var int SX значение X "головы" змейки
-         */
-        var SX = snake.getSnakeFirstBody().x;
-
-        if (SY < food.y) {
+        if (snakeHeadY < food.y) {
             if (snake.directionWay() === "UP") {
                 snake.move("LEFT");
                 return;
@@ -36,7 +29,7 @@ export default class AISnake {
             snake.move("DOWN");
             return;
         }
-        if (SX < food.x) {
+        if (snakeHeadX < food.x) {
             if (snake.directionWay() === "LEFT") {
                 snake.move("DOWN");
                 return;
@@ -45,7 +38,7 @@ export default class AISnake {
 
             return;
         }
-        if (SX > food.x) {
+        if (snakeHeadX > food.x) {
             if (snake.directionWay() === "RIGHT") {
                 snake.move("UP");
                 return;
@@ -53,7 +46,7 @@ export default class AISnake {
             snake.move("LEFT");
             return;
         }
-        if (SY > food.y) {
+        if (snakeHeadY > food.y) {
             if (snake.directionWay() === "DOWN") {
                 snake.move("RIGHT");
                 return;
@@ -62,4 +55,7 @@ export default class AISnake {
             return;
         }
     };
+    makePerpendicularMovement() {
+
+    }
 }

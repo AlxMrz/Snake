@@ -70,8 +70,13 @@
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Application__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Scene__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventRegister__ = __webpack_require__(7);
 
-(new __WEBPACK_IMPORTED_MODULE_0__Application__["a" /* default */]()).main();
+
+
+
+(new __WEBPACK_IMPORTED_MODULE_0__Application__["a" /* default */](new __WEBPACK_IMPORTED_MODULE_1__Scene__["a" /* default */](), new __WEBPACK_IMPORTED_MODULE_2__EventRegister__["a" /* default */]())).main();
 
 
 /***/ }),
@@ -79,26 +84,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Scene__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__EventRegister__ = __webpack_require__(7);
-
-
-
 class Application {
-  constructor() {
-
+  
+  constructor(scene, eventRegister) {
+    this.scene = scene;
+    this.eventRegister = eventRegister;
   }
+
   main() {
-    this.eventRegister = new __WEBPACK_IMPORTED_MODULE_1__EventRegister__["a" /* default */]();
     this.eventRegister.registerAllEvents();
-    this.scene = new __WEBPACK_IMPORTED_MODULE_0__Scene__["a" /* default */]();
     this.scene.init();
     this.game();
   }
 
   game() {
     this.scene.show();
-    this.eventRegister.resetEventData();
+    this.eventRegister.resetEventsData();
     window.requestAnimationFrame(this.game.bind(this));
   }
 }
@@ -120,61 +121,75 @@ class Application {
 
 class Scene {
   constructor() {
-
-  }
-
-  init() {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
     this.xsy = document.getElementById("XSY");
     this.xfy = document.getElementById("XFY");
+  }
+
+  init() {
     this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */](100, 100, this.ctx);
     this.aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
     this.food = this.generateFood(this.ctx);
-    this.mainSnake.drawSnake();
-    this.food.drawFood();
   }
 
   show() {
+    this.clearCanvas();
+    this.makeFoodIfNotExist();
+    this.aiSnake.setSnakeDirection(this.mainSnake, this.food);
+    this.increaseSnakeBodyIfFoodEaten();
+    this.moveSnakeIfDirectionWayExist();
+    this.drawFoodIfExist();
+    this.mainSnake.drawSnake();
+    this.printScore();
+  }
 
+  clearCanvas() {
+    this.ctx.clearRect(0, 0, 800, 500);
+  }
+
+  makeFoodIfNotExist() {
     if (this.food === undefined) {
         this.food = this.generateFood(this.ctx);
     }
+  }
 
-      this.aiSnake.setSnakeDirection(this.mainSnake, this.food);
-
+  increaseSnakeBodyIfFoodEaten() {
     if (this.checkPositions(this.food, this.mainSnake)) {
         this.food = undefined;
         this.mainSnake.pushBody();
     }
+  }
+
+  drawFoodIfExist() {
+    if (this.food !== undefined) {
+        this.food.drawFood();
+    }
+  }
+
+  moveSnakeIfDirectionWayExist() {
     if (this.mainSnake.directionWay() !== 'Nowhere') {
         this.mainSnake.changePosition();
-
-        this.ctx.clearRect(0, 0, 800, 500);
-        this.mainSnake.drawSnake();
-
-        //thirdSnake.drawSnake();
-        if (this.food !== undefined) {
-            this.food.drawFood();
-        }
     }
-
-
-
+  }
+  
+  printScore() {
     this.ctx.fillStyle = "#ff0000";
     this.ctx.font = "italic 30pt Arial";
     this.ctx.fillText("Счет: " + this.mainSnake.getSnakeLength().length, 10, 30);
   }
+
    generateFood(ctx) {
       var randomX;
       var randomY;
       for (var x = true; x !== false;) {
           randomX = Math.round(Math.random() * 790);
           randomY = Math.round(Math.random() * 490);
-          if (randomX % 10 !== 0 || randomY % 10 !== 0) continue;else {
+          if (randomX % 10 !== 0 || randomY % 10 !== 0) {
+            continue;
+          } else {
               x = false;
           }
-          ;
       }
 
       var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */](ctx);
@@ -183,9 +198,8 @@ class Scene {
   }
 
    checkPositions(food1, snake) {
-      if (food1.x === snake.getSnakeLength()[0].x && food1.y === snake.getSnakeLength()[0].y) return true;else {
-          return false;
-      }
+     return food1.x === snake.getSnakeLength()[0].x
+     && food1.y === snake.getSnakeLength()[0].y
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Scene;
@@ -205,6 +219,8 @@ class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.snakeBodyWidth = 10;
+      this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
       this.snakeColor = 'green';
       this.snakeLength = [
@@ -262,56 +278,40 @@ class Snake {
 
     changePosition () {
         if (this.direction === "LEFT") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].x -= 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
+            this.moveAllBodies('x', this.snakeLength[0].x - this.snakeBodyWidth);
+        } else if (this.direction === "UP") {
+            this.moveAllBodies('y', this.snakeLength[0].y - this.snakeBodyHeight);
+        } else if (this.direction === "RIGHT") {
+            this.moveAllBodies('x', this.snakeLength[0].x + this.snakeBodyWidth);
+        } else if (this.direction === "DOWN") {
+            this.moveAllBodies('y', this.snakeLength[0].y + this.snakeBodyHeight);
         }
-        if (this.direction === "UP") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].y -= 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-        if (this.direction === "RIGHT") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].x += 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-        if (this.direction === "DOWN") {
-            var snlen = this.snakeLength.length;
-            for (var count = 1; count <= snlen; count++) {
-                if (count === snlen) {
-                    this.snakeLength[0].y += 10;
-                    continue;
-                }
-                this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
-                this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
-            }
-        }
-
-        if (this.snakeLength[0].x < 0) this.snakeLength[0].x = 790;
-        if (this.snakeLength[0].y < 0) this.snakeLength[0].y = 490;
-        if (this.snakeLength[0].x > 790) this.snakeLength[0].x = 0;
-        if (this.snakeLength[0].y > 490) this.snakeLength[0].y = 0;
+        this.moveSnakeHeadToParallelBoardIfNeeded();
     };
 
+    moveAllBodies(snakeCoord, value) {
+      var snlen = this.snakeLength.length;
+      for (var count = 1; count <= snlen; count++) {
+          if (count === snlen) {
+              if(snakeCoord === 'x') {
+                this.snakeLength[0].x = value;
+              } else if(snakeCoord === 'y') {
+                this.snakeLength[0].y = value;
+              }
+              continue;
+          }
+          this.snakeLength[snlen - count].y = this.snakeLength[snlen - count - 1].y;
+          this.snakeLength[snlen - count].x = this.snakeLength[snlen - count - 1].x;
+      }
+    }
+
+    moveSnakeHeadToParallelBoardIfNeeded() {
+      if (this.snakeLength[0].x < 0) this.snakeLength[0].x = 790;
+      if (this.snakeLength[0].y < 0) this.snakeLength[0].y = 490;
+      if (this.snakeLength[0].x > 790) this.snakeLength[0].x = 0;
+      if (this.snakeLength[0].y > 490) this.snakeLength[0].y = 0;
+    }
+    
     drawSnake () {
         for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
             this.snakeLength[count].drawBody();
@@ -332,17 +332,21 @@ class snakeBody {
       this.x = x1;
       this.y = y1;
       this.ctx = ctx;
+      this.width = 10;
+      this.height = 10;
       this.bodyColor = 'green';
+      this.strokeStyle = 'black';
     }
 
     setColor (color) {
         this.bodyColor = color;
     };
+    
     drawBody () {
-        this.ctx.strokeStyle = "black";
+        this.ctx.strokeStyle = this.strokeStyle;
         this.ctx.fillStyle = this.bodyColor;
-        this.ctx.strokeRect(this.x, this.y, 10, 10);
-        this.ctx.fillRect(this.x, this.y, 10, 10);
+        this.ctx.strokeRect(this.x, this.y, this.width, this.height);
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
     };
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = snakeBody;
@@ -374,17 +378,10 @@ class AISnake {
      * @param food Объект еды
      */
     setSnakeDirection (snake, food) {
-        /**
-         * @var int SY значение Y "головы" змейки
-         */
-        var SY = snake.getSnakeFirstBody().y;
+        var snakeHeadY = snake.getSnakeFirstBody().y;
+        var snakeHeadX = snake.getSnakeFirstBody().x;
 
-        /**
-         * @var int SX значение X "головы" змейки
-         */
-        var SX = snake.getSnakeFirstBody().x;
-
-        if (SY < food.y) {
+        if (snakeHeadY < food.y) {
             if (snake.directionWay() === "UP") {
                 snake.move("LEFT");
                 return;
@@ -392,7 +389,7 @@ class AISnake {
             snake.move("DOWN");
             return;
         }
-        if (SX < food.x) {
+        if (snakeHeadX < food.x) {
             if (snake.directionWay() === "LEFT") {
                 snake.move("DOWN");
                 return;
@@ -401,7 +398,7 @@ class AISnake {
 
             return;
         }
-        if (SX > food.x) {
+        if (snakeHeadX > food.x) {
             if (snake.directionWay() === "RIGHT") {
                 snake.move("UP");
                 return;
@@ -409,7 +406,7 @@ class AISnake {
             snake.move("LEFT");
             return;
         }
-        if (SY > food.y) {
+        if (snakeHeadY > food.y) {
             if (snake.directionWay() === "DOWN") {
                 snake.move("RIGHT");
                 return;
@@ -418,6 +415,9 @@ class AISnake {
             return;
         }
     };
+    makePerpendicularMovement() {
+
+    }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = AISnake;
 
@@ -461,22 +461,24 @@ class EventRegister {
 
   registerKeyDown() {
     document.onkeydown = function (event) {
-        if (event.keyCode === 37) {
-            this.keydown = "LEFT";
-        }
-        if (event.keyCode === 38) {
-            this.keydown = "UP";
-        }
-        if (event.keyCode === 39) {
-            this.keydown = "RIGHT";
-        }
-        if (event.keyCode === 40) {
-            this.keydown = "DOWN";
-        }
+      switch(event.keyCode) {
+        case 37:
+          this.keydown = "LEFT";
+          break;
+        case 38:
+          this.keydown = "UP";
+          break;
+        case 39:
+          this.keydown = "RIGHT";
+          break;
+        case 40:
+          this.keydown = "DOWN";
+          break;
+      }
     };
   }
 
-  resetEventData() {
+  resetEventsData() {
     this.keydown = undefined;
   }
 
