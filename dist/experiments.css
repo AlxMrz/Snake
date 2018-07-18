@@ -1,5 +1,6 @@
 #myCanvas{border:1px solid black;}
-#state {
+#state, #restart {
     border:0;
     margin:0;
+    background-color: white;
 }
