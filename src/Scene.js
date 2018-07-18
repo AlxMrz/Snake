@@ -80,8 +80,8 @@ export default class Scene {
   printScore() {
     this.ctx.fillStyle = "#ff0000";
     this.ctx.font = "italic 12pt Arial";
-    this.ctx.fillText( "Счет игрока: " + this.mainSnake.getSnakeLength().length,5, 15 );
-    this.ctx.fillText( "Счет компьютера 1: " + this.secondSnake.getSnakeLength().length, 5, 30 );
+    this.ctx.fillText( "Your score: " + this.mainSnake.getSnakeLength().length,5, 15 );
+    this.ctx.fillText( "AI score: " + this.secondSnake.getSnakeLength().length, 5, 30 );
   }
 
   generateFood( ctx ) {

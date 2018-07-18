@@ -7,6 +7,7 @@ export default class EventRegister {
     registerAllEvents() {
     this.registerKeyDown();
     this.registerOnClickState();
+    this.registerOnClickRestart();
   }
   
   registerOnClickState() {
@@ -17,14 +18,23 @@ export default class EventRegister {
       
       if(currentState === "false") {
         state.setAttribute('data-current', true); 
+        state.setAttribute('title', 'Stop game'); 
         stateimage.src = 'images/stop.png';
         this.scene.start = true;
       } else {
         state.setAttribute('data-current', false); 
+        state.setAttribute('title', 'Start game'); 
         stateimage.src = 'images/start.png';
         this.scene.start = false;
       }
     }.bind(this);
+  }
+  
+  registerOnClickRestart() {
+    let restart = document.getElementById('restart');
+    restart.onclick = function() {
+      location.reload();
+    }
   }
 
   registerKeyDown() {
