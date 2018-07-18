@@ -17,11 +17,11 @@ export default class EventRegister {
       
       if(currentState === "false") {
         state.setAttribute('data-current', true); 
-        state.innerHTML = 'Стоп';
+        stateimage.src = 'images/stop.png';
         this.scene.start = true;
       } else {
         state.setAttribute('data-current', false); 
-        state.innerHTML = 'Старт';
+        stateimage.src = 'images/start.png';
         this.scene.start = false;
       }
     }.bind(this);

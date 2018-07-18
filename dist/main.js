@@ -145,8 +145,8 @@ class Scene {
       this.clearCanvas();
       this.makeFoodIfNotExist();
       
-      this.processSnakeActions(this.mainSnake, 'short');
-      this.processSnakeActions(this.secondSnake, 'player');
+      this.processSnakeActions(this.mainSnake, 'player');
+      this.processSnakeActions(this.secondSnake, 'short');
       
       this.printSceneObjects();
     }
@@ -165,12 +165,14 @@ class Scene {
     this.increaseSnakeBodyIfFoodEaten(snake);
     snake.moveIfDirectionWayExist();
   }
+  
   printSceneObjects() {
     this.drawFoodIfExist();
     this.mainSnake.drawSnake();
     this.secondSnake.drawSnake();
     this.printScore();
   }
+  
   clearCanvas() {
     this.ctx.clearRect( 0, 0, 800, 500 );
   }
@@ -196,8 +198,9 @@ class Scene {
 
   printScore() {
     this.ctx.fillStyle = "#ff0000";
-    this.ctx.font = "italic 30pt Arial";
-    this.ctx.fillText( "Счет: " + this.mainSnake.getSnakeLength().length, 10, 30 );
+    this.ctx.font = "italic 12pt Arial";
+    this.ctx.fillText( "Счет игрока: " + this.mainSnake.getSnakeLength().length,5, 15 );
+    this.ctx.fillText( "Счет компьютера 1: " + this.secondSnake.getSnakeLength().length, 5, 30 );
   }
 
   generateFood( ctx ) {
@@ -525,11 +528,11 @@ class EventRegister {
       
       if(currentState === "false") {
         state.setAttribute('data-current', true); 
-        state.innerHTML = 'Стоп';
+        stateimage.src = 'images/stop.png';
         this.scene.start = true;
       } else {
         state.setAttribute('data-current', false); 
-        state.innerHTML = 'Старт';
+        stateimage.src = 'images/start.png';
         this.scene.start = false;
       }
     }.bind(this);
