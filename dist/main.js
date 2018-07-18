@@ -116,6 +116,8 @@ class Application {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Snake__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AISnake__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Food__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Player__ = __webpack_require__(8);
+
 
 
 
@@ -130,6 +132,7 @@ class Scene {
   }
 
   init() {
+    this.player = new __WEBPACK_IMPORTED_MODULE_3__Player__["a" /* default */]();
     this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 100, 100, this.ctx );
     this.secondSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 200, 100, this.ctx );
     this.aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
@@ -142,17 +145,23 @@ class Scene {
       this.clearCanvas();
       this.makeFoodIfNotExist();
       
-      this.processSnakeActions(this.mainSnake);
-      this.processSnakeActions(this.secondSnake);
+      this.processSnakeActions(this.mainSnake, 'short');
+      this.processSnakeActions(this.secondSnake, 'player');
       
       this.printSceneObjects();
     }
 
   }
 
-  processSnakeActions(snake) {
+  processSnakeActions(snake, alg) {
     if(this.food === undefined) return;
-    this.aiSnake.setSnakeDirection(snake, this.food );
+    if (alg === 'player') {
+      this.player.changeSnakeDirection(snake, this.keydown );
+    } else if(alg === 'short') {
+      this.aiSnake.shortAlgorithm(snake, this.food );
+    } else {
+      this.aiSnake.forwardAlgorithm(snake, this.food );
+    }
     this.increaseSnakeBodyIfFoodEaten(snake);
     snake.moveIfDirectionWayExist();
   }
@@ -404,7 +413,23 @@ class AISnake {
      * @param food Объект еды
      */
     setSnakeDirection (snake, food) {
-        var snakeHeadY = snake.getSnakeFirstBody().y;
+        this.shortAlgorith(snake, food);
+    };
+    
+    shortAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
+      var snakeHeadX = snake.getSnakeFirstBody().x;
+      
+      if (snakeHeadY != food.y) {
+            snake.move("DOWN");
+        }
+        if (snakeHeadX != food.x) {
+            snake.move("RIGHT");
+        }
+    }
+    
+    forwardAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
         var snakeHeadX = snake.getSnakeFirstBody().x;
 
         if (snakeHeadY < food.y) {
@@ -440,7 +465,8 @@ class AISnake {
             snake.move("UP");
             return;
         }
-    };
+    }
+    
     makePerpendicularMovement() {
 
     }
@@ -531,10 +557,26 @@ class EventRegister {
 
   resetEventsData() {
     this.keydown = undefined;
+    //this.scene.keydown = 'nowhere';
   }
 
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = EventRegister;
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Player {
+  changeSnakeDirection(snake, key) {
+    snake.move(key);
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Player;
+
 
 
 

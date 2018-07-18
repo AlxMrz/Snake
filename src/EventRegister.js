@@ -49,6 +49,7 @@ export default class EventRegister {
 
   resetEventsData() {
     this.keydown = undefined;
+    //this.scene.keydown = 'nowhere';
   }
 
 }

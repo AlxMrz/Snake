@@ -1,6 +1,7 @@
 import Snake from './Snake';
 import AISnake from './AISnake';
-import Food from './Food'
+import Food from './Food';
+import Player from './Player';
 
 export default class Scene {
   constructor() {
@@ -12,6 +13,7 @@ export default class Scene {
   }
 
   init() {
+    this.player = new Player();
     this.mainSnake = new Snake( 100, 100, this.ctx );
     this.secondSnake = new Snake( 200, 100, this.ctx );
     this.aiSnake = new AISnake();
@@ -24,17 +26,23 @@ export default class Scene {
       this.clearCanvas();
       this.makeFoodIfNotExist();
       
-      this.processSnakeActions(this.mainSnake);
-      this.processSnakeActions(this.secondSnake);
+      this.processSnakeActions(this.mainSnake, 'short');
+      this.processSnakeActions(this.secondSnake, 'player');
       
       this.printSceneObjects();
     }
 
   }
 
-  processSnakeActions(snake) {
+  processSnakeActions(snake, alg) {
     if(this.food === undefined) return;
-    this.aiSnake.setSnakeDirection(snake, this.food );
+    if (alg === 'player') {
+      this.player.changeSnakeDirection(snake, this.keydown );
+    } else if(alg === 'short') {
+      this.aiSnake.shortAlgorithm(snake, this.food );
+    } else {
+      this.aiSnake.forwardAlgorithm(snake, this.food );
+    }
     this.increaseSnakeBodyIfFoodEaten(snake);
     snake.moveIfDirectionWayExist();
   }

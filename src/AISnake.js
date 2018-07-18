@@ -18,7 +18,23 @@ export default class AISnake {
      * @param food Объект еды
      */
     setSnakeDirection (snake, food) {
-        var snakeHeadY = snake.getSnakeFirstBody().y;
+        this.shortAlgorith(snake, food);
+    };
+    
+    shortAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
+      var snakeHeadX = snake.getSnakeFirstBody().x;
+      
+      if (snakeHeadY != food.y) {
+            snake.move("DOWN");
+        }
+        if (snakeHeadX != food.x) {
+            snake.move("RIGHT");
+        }
+    }
+    
+    forwardAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
         var snakeHeadX = snake.getSnakeFirstBody().x;
 
         if (snakeHeadY < food.y) {
@@ -54,7 +70,8 @@ export default class AISnake {
             snake.move("UP");
             return;
         }
-    };
+    }
+    
     makePerpendicularMovement() {
 
     }
