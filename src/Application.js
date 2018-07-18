@@ -7,6 +7,7 @@ export default class Application {
 
   main() {
     this.eventRegister.registerAllEvents();
+    this.eventRegister.setScene(this.scene);
     this.scene.init();
     this.game();
   }

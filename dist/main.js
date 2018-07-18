@@ -93,6 +93,7 @@ class Application {
 
   main() {
     this.eventRegister.registerAllEvents();
+    this.eventRegister.setScene(this.scene);
     this.scene.init();
     this.game();
   }
@@ -121,85 +122,97 @@ class Application {
 
 class Scene {
   constructor() {
-    this.canvas = document.getElementById("myCanvas");
-    this.ctx = this.canvas.getContext("2d");
-    this.xsy = document.getElementById("XSY");
-    this.xfy = document.getElementById("XFY");
+    this.canvas = document.getElementById( "myCanvas" );
+    this.ctx = this.canvas.getContext( "2d" );
+    this.xsy = document.getElementById( "XSY" );
+    this.xfy = document.getElementById( "XFY" );
+    this.start = false;
   }
 
   init() {
-    this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */](100, 100, this.ctx);
+    this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 100, 100, this.ctx );
+    this.secondSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 200, 100, this.ctx );
     this.aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
-    this.food = this.generateFood(this.ctx);
+    this.food = this.generateFood( this.ctx );
+    this.printSceneObjects();
   }
 
   show() {
-    this.clearCanvas();
-    this.makeFoodIfNotExist();
-    this.aiSnake.setSnakeDirection(this.mainSnake, this.food);
-    this.increaseSnakeBodyIfFoodEaten();
-    this.moveSnakeIfDirectionWayExist();
-    this.drawFoodIfExist();
-    this.mainSnake.drawSnake();
-    this.printScore();
+    if ( this.start ) {
+      this.clearCanvas();
+      this.makeFoodIfNotExist();
+      
+      this.processSnakeActions(this.mainSnake);
+      this.processSnakeActions(this.secondSnake);
+      
+      this.printSceneObjects();
+    }
+
   }
 
+  processSnakeActions(snake) {
+    if(this.food === undefined) return;
+    this.aiSnake.setSnakeDirection(snake, this.food );
+    this.increaseSnakeBodyIfFoodEaten(snake);
+    snake.moveIfDirectionWayExist();
+  }
+  printSceneObjects() {
+    this.drawFoodIfExist();
+    this.mainSnake.drawSnake();
+    this.secondSnake.drawSnake();
+    this.printScore();
+  }
   clearCanvas() {
-    this.ctx.clearRect(0, 0, 800, 500);
+    this.ctx.clearRect( 0, 0, 800, 500 );
   }
 
   makeFoodIfNotExist() {
-    if (this.food === undefined) {
-        this.food = this.generateFood(this.ctx);
+    if ( this.food === undefined ) {
+      this.food = this.generateFood( this.ctx );
     }
   }
 
-  increaseSnakeBodyIfFoodEaten() {
-    if (this.checkPositions(this.food, this.mainSnake)) {
-        this.food = undefined;
-        this.mainSnake.pushBody();
+  increaseSnakeBodyIfFoodEaten(snake) {
+    if ( this.checkPositions( this.food, snake ) ) {
+      this.food = undefined;
+      snake.pushBody();
     }
   }
 
   drawFoodIfExist() {
-    if (this.food !== undefined) {
-        this.food.drawFood();
+    if ( this.food !== undefined ) {
+      this.food.drawFood();
     }
   }
 
-  moveSnakeIfDirectionWayExist() {
-    if (this.mainSnake.directionWay() !== 'Nowhere') {
-        this.mainSnake.changePosition();
-    }
-  }
-  
   printScore() {
     this.ctx.fillStyle = "#ff0000";
     this.ctx.font = "italic 30pt Arial";
-    this.ctx.fillText("Счет: " + this.mainSnake.getSnakeLength().length, 10, 30);
+    this.ctx.fillText( "Счет: " + this.mainSnake.getSnakeLength().length, 10, 30 );
   }
 
-   generateFood(ctx) {
-      var randomX;
-      var randomY;
-      for (var x = true; x !== false;) {
-          randomX = Math.round(Math.random() * 790);
-          randomY = Math.round(Math.random() * 490);
-          if (randomX % 10 !== 0 || randomY % 10 !== 0) {
-            continue;
-          } else {
-              x = false;
-          }
+  generateFood( ctx ) {
+    var randomX;
+    var randomY;
+    for ( var x = true; x !== false; ) {
+      randomX = Math.round( Math.random() * 790 );
+      randomY = Math.round( Math.random() * 490 );
+      if ( randomX % 10 !== 0 || randomY % 10 !== 0 ) {
+        continue;
+      } else {
+        x = false;
       }
+    }
 
-      var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */](ctx);
-      food.setFoodCoord(randomX, randomY);
-      return food;
+    var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */]( ctx );
+    food.setFoodCoord( randomX, randomY );
+    return food;
   }
 
-   checkPositions(food1, snake) {
-     return food1.x === snake.getSnakeLength()[0].x
-     && food1.y === snake.getSnakeLength()[0].y
+  checkPositions( food1, snake ) {
+    if (food1 === undefined) return false;
+    return food1.x === snake.getSnakeLength()[0].x
+            && food1.y === snake.getSnakeLength()[0].y
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Scene;
@@ -313,10 +326,17 @@ class Snake {
     }
     
     drawSnake () {
-        for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
-            this.snakeLength[count].drawBody();
+        for (let count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
+            this.snakeLength[count].drawBody(count);
         }
     };
+    
+    moveIfDirectionWayExist() {
+      if ( this.directionWay() !== 'Nowhere' ) {
+        this.changePosition();
+      };
+    }
+    
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Snake;
 
@@ -342,9 +362,15 @@ class snakeBody {
         this.bodyColor = color;
     };
     
-    drawBody () {
+    drawBody (position = null) {
+        
         this.ctx.strokeStyle = this.strokeStyle;
-        this.ctx.fillStyle = this.bodyColor;
+        if (position === 0) {
+           this.ctx.fillStyle = "red";
+        } else {
+          this.ctx.fillStyle = this.bodyColor;
+        }
+        
         this.ctx.strokeRect(this.x, this.y, this.width, this.height);
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
     };
@@ -455,8 +481,32 @@ class Food {
 
 "use strict";
 class EventRegister {
-  registerAllEvents() {
+  
+  setScene(scene) {
+    this.scene = scene;
+  }
+  
+    registerAllEvents() {
     this.registerKeyDown();
+    this.registerOnClickState();
+  }
+  
+  registerOnClickState() {
+    let start = document.getElementById('state');
+    start.onclick = function (event) {
+      let state = document.getElementById('state');
+      let currentState = state.getAttribute('data-current');
+      
+      if(currentState === "false") {
+        state.setAttribute('data-current', true); 
+        state.innerHTML = 'Стоп';
+        this.scene.start = true;
+      } else {
+        state.setAttribute('data-current', false); 
+        state.innerHTML = 'Старт';
+        this.scene.start = false;
+      }
+    }.bind(this);
   }
 
   registerKeyDown() {
@@ -475,7 +525,8 @@ class EventRegister {
           this.keydown = "DOWN";
           break;
       }
-    };
+      this.scene.keydown = this.keydown;
+    }.bind(this);
   }
 
   resetEventsData() {
