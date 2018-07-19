@@ -5,6 +5,7 @@ export default class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.updateTime = new Date();
       this.snakeBodyWidth = 10;
       this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
@@ -99,8 +100,15 @@ export default class Snake {
     }
     
     drawSnake () {
-        for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
-            this.snakeLength[count].drawBody();
+        for (let count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
+            this.snakeLength[count].drawBody(count);
         }
     };
+    
+    moveIfDirectionWayExist() {
+      if ( this.directionWay() !== 'Nowhere' ) {
+        this.changePosition();
+      };
+    }
+    
 }

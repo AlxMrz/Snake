@@ -71,7 +71,7 @@
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Application__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Scene__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventRegister__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventRegister__ = __webpack_require__(8);
 
 
 
@@ -93,12 +93,15 @@ class Application {
 
   main() {
     this.eventRegister.registerAllEvents();
+    this.eventRegister.setScene(this.scene);
     this.scene.init();
     this.game();
   }
 
   game() {
+    this.scene.time = new Date();
     this.scene.show();
+    this.scene.lastTime = this.time;
     this.eventRegister.resetEventsData();
     window.requestAnimationFrame(this.game.bind(this));
   }
@@ -115,91 +118,138 @@ class Application {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Snake__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AISnake__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Food__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Player__ = __webpack_require__(7);
+
 
 
 
 
 class Scene {
   constructor() {
-    this.canvas = document.getElementById("myCanvas");
-    this.ctx = this.canvas.getContext("2d");
-    this.xsy = document.getElementById("XSY");
-    this.xfy = document.getElementById("XFY");
+    this.canvas = document.getElementById( "myCanvas" );
+    this.ctx = this.canvas.getContext( "2d" );
+    this.xsy = document.getElementById( "XSY" );
+    this.xfy = document.getElementById( "XFY" );
+    this.start = false;
   }
 
   init() {
-    this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */](100, 100, this.ctx);
+    this.player = new __WEBPACK_IMPORTED_MODULE_3__Player__["a" /* default */]();
+    this.mainSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 100, 100, this.ctx );
+    this.secondSnake = new __WEBPACK_IMPORTED_MODULE_0__Snake__["a" /* default */]( 200, 100, this.ctx );
     this.aiSnake = new __WEBPACK_IMPORTED_MODULE_1__AISnake__["a" /* default */]();
-    this.food = this.generateFood(this.ctx);
+    this.food = this.generateFood( this.ctx );
+    this.printSceneObjects();
   }
 
   show() {
-    this.clearCanvas();
-    this.makeFoodIfNotExist();
-    this.aiSnake.setSnakeDirection(this.mainSnake, this.food);
-    this.increaseSnakeBodyIfFoodEaten();
-    this.moveSnakeIfDirectionWayExist();
-    this.drawFoodIfExist();
-    this.mainSnake.drawSnake();
-    this.printScore();
+    if ( this.start ) {
+      this.clearCanvas();
+      this.makeFoodIfNotExist();
+      
+      this.processSnakeActions(this.mainSnake, 'player');
+      this.processSnakeActions(this.secondSnake, 'forward');
+      
+      this.printSceneObjects();
+    }
+
   }
 
+  processSnakeActions(snake, wayType) {
+    if(this.food === undefined) return;
+    
+    this.changeSnakeDirection(snake, wayType);
+    this.increaseSnakeBodyIfFoodEaten(snake);
+  }
+  
+  changeSnakeDirection(snake, wayType) {
+    let updateTime = this.getSnakeUpdateTime(snake);
+    let currentDiff = Math.abs(this.time.getMilliseconds() - snake.updateTime.getMilliseconds());
+    
+    if ( currentDiff > updateTime ) {
+      if (wayType === 'player') {
+        this.player.changeSnakeDirection(snake, this.keydown );
+      } else if(wayType === 'short') {
+        this.aiSnake.shortAlgorithm(snake, this.food );
+      } else {
+        this.aiSnake.forwardAlgorithm(snake, this.food );
+      }
+      snake.updateTime = this.time;
+      snake.moveIfDirectionWayExist();
+    }
+  }
+  
+  getSnakeUpdateTime(snake) {
+    let updateTime = 0;
+    let snakeLength = snake.getSnakeLength().length;
+    if(snakeLength < 30) updateTime = 1000/30;
+    if(snakeLength < 25) updateTime = 1000/25;
+    if(snakeLength < 20) updateTime = 1000/20;
+    if(snakeLength < 15) updateTime = 1000/15;
+    if(snakeLength < 10) updateTime = 1000/10;
+    if(snakeLength < 5) updateTime = 1000/5;
+    return updateTime;
+  }
+  
+  printSceneObjects() {
+    this.drawFoodIfExist();
+    this.mainSnake.drawSnake();
+    this.secondSnake.drawSnake();
+    this.printScore();
+  }
+  
   clearCanvas() {
-    this.ctx.clearRect(0, 0, 800, 500);
+    this.ctx.clearRect( 0, 0, 800, 500 );
   }
 
   makeFoodIfNotExist() {
-    if (this.food === undefined) {
-        this.food = this.generateFood(this.ctx);
+    if ( this.food === undefined ) {
+      this.food = this.generateFood( this.ctx );
     }
   }
 
-  increaseSnakeBodyIfFoodEaten() {
-    if (this.checkPositions(this.food, this.mainSnake)) {
-        this.food = undefined;
-        this.mainSnake.pushBody();
+  increaseSnakeBodyIfFoodEaten(snake) {
+    if ( this.checkPositions( this.food, snake ) ) {
+      this.food = undefined;
+      snake.pushBody();
     }
   }
 
   drawFoodIfExist() {
-    if (this.food !== undefined) {
-        this.food.drawFood();
+    if ( this.food !== undefined ) {
+      this.food.drawFood();
     }
   }
 
-  moveSnakeIfDirectionWayExist() {
-    if (this.mainSnake.directionWay() !== 'Nowhere') {
-        this.mainSnake.changePosition();
-    }
-  }
-  
   printScore() {
     this.ctx.fillStyle = "#ff0000";
-    this.ctx.font = "italic 30pt Arial";
-    this.ctx.fillText("Счет: " + this.mainSnake.getSnakeLength().length, 10, 30);
+    this.ctx.font = "italic 12pt Arial";
+    this.ctx.fillText( "Your score: " + this.mainSnake.getSnakeLength().length,5, 15 );
+    this.ctx.fillText( "AI score: " + this.secondSnake.getSnakeLength().length, 5, 30 );
   }
 
-   generateFood(ctx) {
-      var randomX;
-      var randomY;
-      for (var x = true; x !== false;) {
-          randomX = Math.round(Math.random() * 790);
-          randomY = Math.round(Math.random() * 490);
-          if (randomX % 10 !== 0 || randomY % 10 !== 0) {
-            continue;
-          } else {
-              x = false;
-          }
+  generateFood( ctx ) {
+    var randomX;
+    var randomY;
+    for ( var x = true; x !== false; ) {
+      randomX = Math.round( Math.random() * 790 );
+      randomY = Math.round( Math.random() * 490 );
+      if ( randomX % 10 !== 0 || randomY % 10 !== 0 ) {
+        continue;
+      } else {
+        x = false;
       }
+    }
 
-      var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */](ctx);
-      food.setFoodCoord(randomX, randomY);
-      return food;
+    var food = new __WEBPACK_IMPORTED_MODULE_2__Food__["a" /* default */]( ctx );
+    food.setFoodCoord( randomX, randomY );
+    return food;
   }
 
-   checkPositions(food1, snake) {
-     return food1.x === snake.getSnakeLength()[0].x
-     && food1.y === snake.getSnakeLength()[0].y
+  checkPositions( food1, snake ) {
+    if (food1 === undefined) return false;
+    return food1.x === snake.getSnakeLength()[0].x
+            && food1.y === snake.getSnakeLength()[0].y
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Scene;
@@ -219,6 +269,7 @@ class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.updateTime = new Date();
       this.snakeBodyWidth = 10;
       this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
@@ -313,10 +364,17 @@ class Snake {
     }
     
     drawSnake () {
-        for (var count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
-            this.snakeLength[count].drawBody();
+        for (let count = 0, x1 = 0, y1 = 0; count < this.snakeLength.length; count++, x1 - 10, y1 - 10) {
+            this.snakeLength[count].drawBody(count);
         }
     };
+    
+    moveIfDirectionWayExist() {
+      if ( this.directionWay() !== 'Nowhere' ) {
+        this.changePosition();
+      };
+    }
+    
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Snake;
 
@@ -342,9 +400,15 @@ class snakeBody {
         this.bodyColor = color;
     };
     
-    drawBody () {
+    drawBody (position = null) {
+        
         this.ctx.strokeStyle = this.strokeStyle;
-        this.ctx.fillStyle = this.bodyColor;
+        if (position === 0) {
+           this.ctx.fillStyle = "red";
+        } else {
+          this.ctx.fillStyle = this.bodyColor;
+        }
+        
         this.ctx.strokeRect(this.x, this.y, this.width, this.height);
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
     };
@@ -378,7 +442,23 @@ class AISnake {
      * @param food Объект еды
      */
     setSnakeDirection (snake, food) {
-        var snakeHeadY = snake.getSnakeFirstBody().y;
+        this.shortAlgorith(snake, food);
+    };
+    
+    shortAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
+      var snakeHeadX = snake.getSnakeFirstBody().x;
+      
+      if (snakeHeadY != food.y) {
+            snake.move("DOWN");
+        }
+        if (snakeHeadX != food.x) {
+            snake.move("RIGHT");
+        }
+    }
+    
+    forwardAlgorithm(snake, food) {
+      var snakeHeadY = snake.getSnakeFirstBody().y;
         var snakeHeadX = snake.getSnakeFirstBody().x;
 
         if (snakeHeadY < food.y) {
@@ -414,7 +494,8 @@ class AISnake {
             snake.move("UP");
             return;
         }
-    };
+    }
+    
     makePerpendicularMovement() {
 
     }
@@ -454,9 +535,58 @@ class Food {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+class Player {
+  changeSnakeDirection(snake, key) {
+    snake.move(key);
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Player;
+
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 class EventRegister {
-  registerAllEvents() {
+  
+  setScene(scene) {
+    this.scene = scene;
+  }
+  
+    registerAllEvents() {
     this.registerKeyDown();
+    this.registerOnClickState();
+    this.registerOnClickRestart();
+  }
+  
+  registerOnClickState() {
+    let start = document.getElementById('state');
+    start.onclick = function (event) {
+      let state = document.getElementById('state');
+      let currentState = state.getAttribute('data-current');
+      
+      if(currentState === "false") {
+        state.setAttribute('data-current', true); 
+        state.setAttribute('title', 'Stop game'); 
+        stateimage.src = 'images/stop.png';
+        this.scene.start = true;
+      } else {
+        state.setAttribute('data-current', false); 
+        state.setAttribute('title', 'Start game'); 
+        stateimage.src = 'images/start.png';
+        this.scene.start = false;
+      }
+    }.bind(this);
+  }
+  
+  registerOnClickRestart() {
+    let restart = document.getElementById('restart');
+    restart.onclick = function() {
+      location.reload();
+    }
   }
 
   registerKeyDown() {
@@ -475,11 +605,13 @@ class EventRegister {
           this.keydown = "DOWN";
           break;
       }
-    };
+      this.scene.keydown = this.keydown;
+    }.bind(this);
   }
 
   resetEventsData() {
     this.keydown = undefined;
+    //this.scene.keydown = 'nowhere';
   }
 
 }
