@@ -34,8 +34,31 @@ export default class Scene {
 
   }
 
-  processSnakeActions(snake, alg) {
+  processSnakeActions(snake, wayType) {
     if(this.food === undefined) return;
+    
+    this.changeSnakeDirection(snake, wayType);
+    this.increaseSnakeBodyIfFoodEaten(snake);
+  }
+  
+  changeSnakeDirection(snake, wayType) {
+    let updateTime = this.getSnakeUpdateTime(snake);
+    let currentDiff = Math.abs(this.time.getMilliseconds() - snake.updateTime.getMilliseconds());
+    
+    if ( currentDiff > updateTime ) {
+      if (wayType === 'player') {
+        this.player.changeSnakeDirection(snake, this.keydown );
+      } else if(wayType === 'short') {
+        this.aiSnake.shortAlgorithm(snake, this.food );
+      } else {
+        this.aiSnake.forwardAlgorithm(snake, this.food );
+      }
+      snake.updateTime = this.time;
+      snake.moveIfDirectionWayExist();
+    }
+  }
+  
+  getSnakeUpdateTime(snake) {
     let updateTime = 0;
     let snakeLength = snake.getSnakeLength().length;
     if(snakeLength < 30) updateTime = 1000/30;
@@ -44,26 +67,7 @@ export default class Scene {
     if(snakeLength < 15) updateTime = 1000/15;
     if(snakeLength < 10) updateTime = 1000/10;
     if(snakeLength < 5) updateTime = 1000/5;
-    let currentDiff = Math.abs(this.time.getMilliseconds() - snake.updateTime.getMilliseconds());
-    console.log(this.time.getSeconds());
-          console.log(snake.updateTime.getMilliseconds());
-      console.log(currentDiff);
-      console.log(updateTime);
-      console.log('------------------------');
-    if (( currentDiff > updateTime) ) {
-
-      if (alg === 'player') {
-        this.player.changeSnakeDirection(snake, this.keydown );
-      } else if(alg === 'short') {
-        this.aiSnake.shortAlgorithm(snake, this.food );
-      } else {
-        this.aiSnake.forwardAlgorithm(snake, this.food );
-      }
-      snake.updateTime = this.time;
-      snake.moveIfDirectionWayExist();
-    }
-    this.increaseSnakeBodyIfFoodEaten(snake);
-    
+    return updateTime;
   }
   
   printSceneObjects() {
