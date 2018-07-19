@@ -13,7 +13,9 @@ export default class Application {
   }
 
   game() {
+    this.scene.time = new Date();
     this.scene.show();
+    this.scene.lastTime = this.time;
     this.eventRegister.resetEventsData();
     window.requestAnimationFrame(this.game.bind(this));
   }

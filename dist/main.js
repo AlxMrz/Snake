@@ -71,7 +71,7 @@
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Application__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Scene__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventRegister__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventRegister__ = __webpack_require__(8);
 
 
 
@@ -99,7 +99,9 @@ class Application {
   }
 
   game() {
+    this.scene.time = new Date();
     this.scene.show();
+    this.scene.lastTime = this.time;
     this.eventRegister.resetEventsData();
     window.requestAnimationFrame(this.game.bind(this));
   }
@@ -116,7 +118,7 @@ class Application {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Snake__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AISnake__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Food__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Player__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Player__ = __webpack_require__(7);
 
 
 
@@ -146,7 +148,7 @@ class Scene {
       this.makeFoodIfNotExist();
       
       this.processSnakeActions(this.mainSnake, 'player');
-      this.processSnakeActions(this.secondSnake, 'short');
+      this.processSnakeActions(this.secondSnake, 'forward');
       
       this.printSceneObjects();
     }
@@ -155,15 +157,34 @@ class Scene {
 
   processSnakeActions(snake, alg) {
     if(this.food === undefined) return;
-    if (alg === 'player') {
-      this.player.changeSnakeDirection(snake, this.keydown );
-    } else if(alg === 'short') {
-      this.aiSnake.shortAlgorithm(snake, this.food );
-    } else {
-      this.aiSnake.forwardAlgorithm(snake, this.food );
+    let updateTime = 0;
+    let snakeLength = snake.getSnakeLength().length;
+    if(snakeLength < 30) updateTime = 1000/30;
+    if(snakeLength < 25) updateTime = 1000/25;
+    if(snakeLength < 20) updateTime = 1000/20;
+    if(snakeLength < 15) updateTime = 1000/15;
+    if(snakeLength < 10) updateTime = 1000/10;
+    if(snakeLength < 5) updateTime = 1000/5;
+    let currentDiff = Math.abs(this.time.getMilliseconds() - snake.updateTime.getMilliseconds());
+    console.log(this.time.getSeconds());
+          console.log(snake.updateTime.getMilliseconds());
+      console.log(currentDiff);
+      console.log(updateTime);
+      console.log('------------------------');
+    if (( currentDiff > updateTime) ) {
+
+      if (alg === 'player') {
+        this.player.changeSnakeDirection(snake, this.keydown );
+      } else if(alg === 'short') {
+        this.aiSnake.shortAlgorithm(snake, this.food );
+      } else {
+        this.aiSnake.forwardAlgorithm(snake, this.food );
+      }
+      snake.updateTime = this.time;
+      snake.moveIfDirectionWayExist();
     }
     this.increaseSnakeBodyIfFoodEaten(snake);
-    snake.moveIfDirectionWayExist();
+    
   }
   
   printSceneObjects() {
@@ -244,6 +265,7 @@ class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.updateTime = new Date();
       this.snakeBodyWidth = 10;
       this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
@@ -509,6 +531,21 @@ class Food {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+class Player {
+  changeSnakeDirection(snake, key) {
+    snake.move(key);
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Player;
+
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 class EventRegister {
   
   setScene(scene) {
@@ -575,21 +612,6 @@ class EventRegister {
 
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = EventRegister;
-
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Player {
-  changeSnakeDirection(snake, key) {
-    snake.move(key);
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Player;
-
 
 
 

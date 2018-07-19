@@ -5,6 +5,7 @@ export default class Snake {
       this.x = x;
       this.y = y;
       this.ctx = ctx;
+      this.updateTime = new Date();
       this.snakeBodyWidth = 10;
       this.snakeBodyHeight = 10;
       this.direction = 'Nowhere';
