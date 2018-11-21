@@ -1,4 +1,4 @@
-#Snake#
+# Snake #
 
 This is the simplest realization of the famouse game. 
 You should use arrow buttons to rule your snake.
